@@ -1,0 +1,7 @@
+/other
+/backend/node_modules
+/backend/.env
+/backend/package.json
+/backend/package-lock.json
+/backend/docker-compose.yaml
+/backend/dist

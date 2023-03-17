@@ -1,7 +1,7 @@
 import { LolApi } from 'twisted';
 import { MatchQueryV5DTO } from 'twisted/dist/models-dto/matches/query-v5/match-query-v5.dto';
 import { RegionGroups, Regions } from 'twisted/dist/constants';
-import { ApiResponseDTO, SummonerV4DTO } from 'twisted/dist/models-dto';
+import { ApiResponseDTO, MatchV5DTOs, SummonerV4DTO } from 'twisted/dist/models-dto';
 
 const query: MatchQueryV5DTO = {
   // start: 3,
@@ -17,7 +17,7 @@ export async function summonerByName(api: LolApi, summonerName: string, region: 
   }
 }
 
-export async function lastMatchBySummoner(api: LolApi, puuid: string, region: RegionGroups) {
+export async function lastMatchBySummoner(api: LolApi, puuid: string, region: RegionGroups): Promise<ApiResponseDTO<string[]> | null> {
   try {
     return await api.MatchV5.list(puuid, region, query);
   }
@@ -26,11 +26,12 @@ export async function lastMatchBySummoner(api: LolApi, puuid: string, region: Re
   }
 }
 
-export async function resultMatchByMatchId(api: LolApi, matchId: string, region: RegionGroups) {
+export async function resultMatchByMatchId(api: LolApi, matchId: string, region: RegionGroups): Promise<ApiResponseDTO<MatchV5DTOs.MatchDto> | null> {
   try {
     return await api.MatchV5.get(matchId, region);
   }
   catch (error) {
-    console.log(`Нет никакой информации о матче ${matchId}`);
+    // console.log(`Нет никакой информации о матче ${matchId}`)
+    return null;
   }
 }

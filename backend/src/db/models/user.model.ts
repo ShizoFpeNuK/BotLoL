@@ -1,5 +1,5 @@
 import Sequelize from "sequelize";
-const { sequelizeInstance } = require("..");
+import { sequelizeInstance } from '..';
 
 export default class User extends Sequelize.Model { }
 
@@ -9,9 +9,6 @@ User.init(
       type: Sequelize.BIGINT,
       primaryKey: true,
       unique: true
-    },
-    channel_id: {
-      type: Sequelize.BIGINT,
     },
     match_id: {
       type: Sequelize.STRING,
@@ -30,5 +27,3 @@ User.init(
 
   { sequelize: sequelizeInstance, underscored: true, modelName: "user" }
 );
-
-module.exports = User;

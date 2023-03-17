@@ -1,15 +1,12 @@
-const { Sequelize } = require("sequelize");
+import { Sequelize } from "sequelize";
 
-const sequelizeInstance = new Sequelize({
+export const sequelizeInstance = new Sequelize("BotLoL", "root", "root",{
     dialect: "postgres",
     host: "localhost",
-    port: "5432",
-    database: "BotLoL",
-    username: "root",
-    password: "root",
+    port: 5432,
 });
 
-const initDB = async () => {
+export const initDB: () => Promise<void> = async () => {
     try {
         await sequelizeInstance.authenticate();
         await sequelizeInstance.sync();
@@ -18,9 +15,4 @@ const initDB = async () => {
         console.log("Sequelize ERROR (initDB)", error);
         process.exit();
     }
-};
-
-module.exports = {
-    sequelizeInstance,
-    initDB,
 };

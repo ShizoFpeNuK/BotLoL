@@ -7,15 +7,9 @@ import User from "../../db/models/user.model";
 
 
 export default async function registerNewClient(socket: SocketSetver, api: LolApi, clientInfo: INewUser): Promise<void> {
-  await User.findByPk(clientInfo.clientId)
-    .then(async (resUser: User | null) => {
-      if (resUser) {
-        socket.emit("clientRegistered", { //Вынести отдельно
-          channelId: clientInfo.channelId,
-          clientId: clientInfo.clientId,
-          summonerName: resUser.dataValues.summoner_name
-        });
-      } else {
+  await checkForRegistration(socket, clientInfo)
+    .then(async (isRegistration) => {
+      if (!isRegistration) {
         await summonerByName(api, clientInfo.summonerName, Constants.Regions.RUSSIA)
           .then(async (resSummoner: ApiResponseDTO<SummonerV4DTO> | null) => {
             if (resSummoner) {
@@ -34,10 +28,10 @@ export default async function registerNewClient(socket: SocketSetver, api: LolAp
                 match_id: summonerLastMatchId?.response[0]
               })
             } else {
-              socket.emit("isNickname", { 
-                isNickname: false, 
-                channelId: clientInfo.channelId, 
-                clientId: clientInfo.clientId, 
+              socket.emit("isNickname", {
+                isNickname: false,
+                channelId: clientInfo.channelId,
+                clientId: clientInfo.clientId,
                 summonerName: clientInfo.summonerName,
               });
             }
@@ -47,7 +41,22 @@ export default async function registerNewClient(socket: SocketSetver, api: LolAp
           })
       }
     })
-    .catch((error) => {
-      console.log(error);
-    })
+}
+
+async function checkForRegistration(socket: SocketSetver, clientInfo: INewUser): Promise<boolean> {
+  return new Promise<boolean>(async (resolve, reject) => {
+    await User.findByPk(clientInfo.clientId)
+      .then((resUser: User | null) => {
+        if (resUser) {
+          socket.emit("clientRegistered", { //Вынести отдельно
+            channelId: clientInfo.channelId,
+            clientId: clientInfo.clientId,
+            summonerName: resUser.dataValues.summoner_name
+          });
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      })
+  })
 }

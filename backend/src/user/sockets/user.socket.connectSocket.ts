@@ -3,9 +3,9 @@ import { Constants, LolApi } from 'twisted';
 import { ApiResponseDTO, SummonerV4DTO } from 'twisted/dist/models-dto';
 import { Server, Socket as SockerServer } from 'socket.io';
 import { lastMatchBySummoner, summonerByName } from '../../riot/riot.request';
-import { summonerDisableTrackingPlayer, summonerEnableTrackingPlayer } from '../user.services/user.trackingPlayer';
+import { summonerDisableTrackingPlayer, summonerEnableTrackingPlayer } from '../services/user.trackingPlayer';
 import User from '../../db/models/user.model';
-import registerNewClient from '../user.services/user.registerNewClient';
+import registerNewClient from '../services/user.registerNewClient';
 
 
 export default function connectSocket(server: Server, api: LolApi) {

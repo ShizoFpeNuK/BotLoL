@@ -1,5 +1,5 @@
 import { LolApi } from "twisted";
-import { clientNoRegisted } from "../user.sockets/user.socket.functions";
+import { clientNoRegisted } from "../sockets/user.socket.functions";
 import { IMatchInfo, IUser } from "../user.model";
 import { Socket as SocketServer } from "socket.io";
 import User from "../../db/models/user.model";
@@ -8,19 +8,19 @@ import summonerResultLastMatch from "./user.summonerResultLastMatch";
 
 const timeRequestRiot: number = 10000;
 
-export async function summonerEnableTrackingPlayer(socket: SocketServer, api: LolApi, clientInfo: IUser) {
+export async function summonerEnableTrackingPlayer(socket: SocketServer, api: LolApi, clientInfo: IUser): Promise<void> {
   await User.findByPk(clientInfo.clientId)
     .then(async (resUser: User | null) => {
       if (resUser) {
-        if (!resUser?.dataValues.timer_tracking_player) {
+        if (!resUser.dataValues.timer_tracking_player) {
           socket.emit("playerAlreadyTracked", { //Вынести отдельно
             isTracked: false,
             channelId: clientInfo.channelId,
             clientId: clientInfo.clientId,
           })
-          
+
           const timerTrackingPlayerId: NodeJS.Timer = setInterval(async () =>
-          await summonerResultLastMatch(api, resUser?.dataValues.summoner_puuid, resUser?.dataValues.match_id)
+            await summonerResultLastMatch(api, resUser.dataValues.summoner_puuid, resUser.dataValues.match_id)
               .then(async (resLastMatch: IMatchInfo) => {
                 socket.emit("summonerResultPlayedMatch", {
                   win: resLastMatch.resultLastMatch,
@@ -36,7 +36,7 @@ export async function summonerEnableTrackingPlayer(socket: SocketServer, api: Lo
               }),
             timeRequestRiot);
 
-          await resUser?.update({
+          await resUser.update({
             timer_tracking_player: timerTrackingPlayerId[Symbol.toPrimitive](),
           })
         } else {
@@ -55,7 +55,7 @@ export async function summonerEnableTrackingPlayer(socket: SocketServer, api: Lo
     })
 }
 
-export async function summonerDisableTrackingPlayer(socket: SocketServer, clientInfo: IUser) {
+export async function summonerDisableTrackingPlayer(socket: SocketServer, clientInfo: IUser): Promise<void> {
   await User.findByPk(clientInfo.clientId)
     .then(async (resUser: User | null) => {
       if (resUser) {

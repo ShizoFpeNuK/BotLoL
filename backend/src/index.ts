@@ -1,13 +1,14 @@
 import { Server } from 'socket.io';
 import { LolApi } from 'twisted';
 import { initDB } from './db';
-import connectSocket from './user/user.sockets/user.socket.main';
+import { clearDB } from './db/functions';
+import connectSocket from './user/sockets/user.socket.connectSocket';
 
 
-initDB();
+initDB().then(() => {clearDB()});
 
-const ServerPort: number = Number(process.env.ServerPort) || 5000;
-export const server = new Server(ServerPort);
-export const apiRequestRiot = new LolApi({ key: process.env.ApiKey });
+const ServerPort: number = Number(process.env.ServerPort!);
+const server = new Server(ServerPort);
+const apiRequestRiot = new LolApi({ key: process.env.ApiKey });
 
 connectSocket(server, apiRequestRiot);

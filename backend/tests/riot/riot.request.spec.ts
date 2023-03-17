@@ -7,10 +7,10 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 
-const apiRequestRiot: LolApi = new LolApi({ key: process.env.ApiKey });
+const apiRequestRiot: LolApi = new LolApi({ key: process.env.ApiKey }); //Переписать
 const correctNickname: string = 'ShiZoFreNuK';
 const uncorrectNickname: string = '1';
-const correctSummonerPUUID: string = '0spdyKCmypuVf1mTYmCD6Qn2z7azFo4GpLitnKUJu6wB1OTI_E65O-8ZjjrS0-UJhgssmH2-tQRtcg';
+const correctSummonerPUUID: string = 'vggdP7RnOjaVfahyJpwGDG21uWhf9lSMsuHpXpo0pa4pvJ3aWiKlo6YSv-SUM59wKXH36LpX0MHfAQ';
 const uncorrectSummonerPUUID: string = '1'
 const correctMatchId: string = 'RU_433988988';
 const uncorrectMatchId: string = '';

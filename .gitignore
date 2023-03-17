@@ -1,5 +1,12 @@
+# Server
 /other
 /backend/node_modules
 /backend/.env
 /backend/docker-compose.yaml
 /backend/dist
+
+# Bot
+.idea/
+/bot/.env
+/bot/venv
+__pycache__/

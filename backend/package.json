@@ -6,7 +6,9 @@
   "scripts": {
     "test": "mocha --require ts-node/register ./tests/**/*.spec.ts",
     "test:riot": "mocha --require ts-node/register ./tests/riot/*.spec.ts",
-    "test:userServices": "mocha --require ts-node/register ./tests/user/user.services/*.spec.ts",
+    "test:userRegister": "mocha --require ts-node/register ./tests/user/services/user.registerNewClient.spec.ts",
+    "test:resultLastMatch": "mocha --require ts-node/register ./tests/user/services/user.summonerResultLastMatch.spec.ts",
+    "test:trackingPlayer": "mocha --require ts-node/register ./tests/user/services/user.trackingPlayer.spec.ts",
     "watch": "tsc -w",
     "dev": "nodemon index.ts",
     "build": "tsc -p tsconfig.json"

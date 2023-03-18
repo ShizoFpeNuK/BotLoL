@@ -1,4 +1,4 @@
-import { IUser } from '../../../src/user/user.model';
+import { IMatchInfo, IUser } from '../../../src/user/user.model';
 import { LolApi } from 'twisted';
 import { assert } from 'chai';
 import { describe } from 'mocha';
@@ -11,9 +11,6 @@ dotenv.config();
 
 
 const api: LolApi = new LolApi({ key: process.env.ApiKey });
-const correctSummonerPUUID: string = "vggdP7RnOjaVfahyJpwGDG21uWhf9lSMsuHpXpo0pa4pvJ3aWiKlo6YSv-SUM59wKXH36LpX0MHfAQ";
-const uncorrectSummonerPUUID: string = "vggdP7RnOjaVfahyJpwGDG21uWhf9lSMs";
-const lastMatchId: string = "RU_342441";
 const clientInfoTrue: IUser = {
   clientId: '102930931931',
   channelId: '3131481748401871',
@@ -36,17 +33,33 @@ describe("Тест функции отслеживания игрока summoner
       })
       clientSocket = io('ws://localhost:4001');
 
-      await User.create({
-        client_id: '102930931931',
-        summoner_name: 'ShiZoFreNuK',
-      }).then(() => {
-        resolve();
+      await User.destroy({
+        truncate: true
+      }).then(async () => {
+        await User.create({
+          client_id: "102930931931",
+          summoner_name: "ShiZoFreNuK",
+          match_id: "RU_342441",
+          summoner_puuid: "vggdP7RnOjaVfahyJpwGDG21uWhf9lSMsuHpXpo0pa4pvJ3aWiKlo6YSv-SUM59wKXH36LpX0MHfAQ",
+        }).then(() => {
+          resolve();
+        })
       })
     })
   })
 
-  afterEach(() => {
-    clientSocket.emit("disableTrackingPlayer", clientInfoTrue);
+  afterEach(function () { //Поменять
+    this.timeout(5000);
+    return new Promise(async (resolve) => {
+      await User.findByPk(clientInfoTrue.clientId)
+        .then(async (user: User | null) => {
+          await user?.update({
+            match_id: "RU_342441",
+          }).then(() => {
+            setTimeout(resolve, 4000);
+          })
+        })
+    })
   })
 
   after(async () => {
@@ -63,18 +76,53 @@ describe("Тест функции отслеживания игрока summoner
   })
 
 
-  it("Возвращает false, если игрок ещё не отслеживается", async function () {
-    this.timeout(2000);
-    return new Promise(async (resolve) => {
+
+  describe("Получение результата матча при отслеживании игрока", () => {
+    after(function (done) {
+      this.timeout(14000);
+      clientSocket.emit("disableTrackingPlayer", clientInfoTrue);
+      setTimeout(done, 13000);
+    })
+
+    it("Возвращает объект результата последнего матча", function () {
+      this.timeout(14000);
       clientSocket.emit("enableTrackingPlayer", clientInfoTrue);
-      clientSocket.once("playerAlreadyTracked", (noTrackedPlayer: any) => {
-        console.log(noTrackedPlayer.isTracked);
-        assert.isFalse(noTrackedPlayer.isTracked);
-        setTimeout(resolve, 1000);
+      return new Promise(async (resolve) => {
+        clientSocket.once("summonerResultPlayedMatch", (resLastMatch: any) => {
+          assert.isObject(resLastMatch, "Выполнено c ошибкой"); //Как правильно сделать
+        })
+        setTimeout(resolve, 13000);
       })
     })
   })
 
-  // Дописать тесты
+  describe("Проверка на отслеживание", () => {
+    after(function (done) {
+      this.timeout(14000);
+      clientSocket.emit("disableTrackingPlayer", clientInfoTrue);
+      setTimeout(done, 13000);
+    })
 
+    it("Возвращает false, если игрок ещё не отслеживается", async function () {
+      this.timeout(14000);
+      clientSocket.emit("enableTrackingPlayer", clientInfoTrue);
+      return new Promise(async (resolve) => {
+        clientSocket.once("playerAlreadyTracked", (noTrackedPlayer: any) => {
+          assert.isFalse(noTrackedPlayer.isTracked);
+          setTimeout(resolve, 13000);
+        })
+      })
+    })
+
+    it("Возвращает true, если игрок уже отслеживается", async function () {
+      this.timeout(14000);
+      clientSocket.emit("enableTrackingPlayer", clientInfoTrue);
+      return new Promise(async (resolve) => {
+        clientSocket.once("playerAlreadyTracked", (yesTrackedPlayer: any) => {
+          assert.isTrue(yesTrackedPlayer.isTracked);
+          setTimeout(resolve, 13000);
+        })
+      })
+    })
+  })
 })

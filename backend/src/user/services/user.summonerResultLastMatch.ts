@@ -25,10 +25,16 @@ export default async function summonerResultLastMatch(api: LolApi, summonerPUUID
                   }
                 }
               })
+              .catch((error) => {
+                console.log(error);
+              })
           }
         } else {
           reject("Нет сыгранных матчей или игрока не существует!")
         }
+      })
+      .catch((error) => {
+        console.log(error);
       })
   })
 }

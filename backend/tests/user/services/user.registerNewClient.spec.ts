@@ -13,12 +13,12 @@ dotenv.config();
 const api: LolApi = new LolApi({ key: process.env.ApiKey });
 const clientInfoTrue: INewUser = {
   summonerName: 'ShiZoFreNuK',
-  clientId: '102930931931',
+  clientId: '1029309319311',
   channelId: '3131481748401871',
 }
 const clientInfoFalse: INewUser = {
   summonerName: '1',
-  clientId: '10293093193111',
+  clientId: '102930931931111',
   channelId: '313148174840111871',
 }
 
@@ -28,16 +28,13 @@ describe("Тест функции регистрации registerNewClient", () 
   let clientSocket: SocketClient;
 
   before(async () => {
-    // return new Promise(async (resolve) => {
-      server = new Server(4001);
-      server.on("connection", (socket: SockerServer) => {
-        socket.on("registerClient", async (clientInfo: INewUser) => {
-          await registerNewClient(socket, api, clientInfo);
-        })
-        // resolve();
+    server = new Server(4001);
+    server.on("connection", (socket: SockerServer) => {
+      socket.on("registerClient", async (clientInfo: INewUser) => {
+        await registerNewClient(socket, api, clientInfo);
       })
-      clientSocket = io('ws://localhost:4001');
-    // })
+    })
+    clientSocket = io('ws://localhost:4001');
   })
 
   after(async () => {
@@ -87,10 +84,10 @@ describe("Тест функции регистрации registerNewClient", () 
   })
 
 
-  describe("Проверка первой регистрации пользователя", () => {
+  describe("Проверка первой регистрации пользователя", () => { //Не успевает disable за enable после мгновенного ввода
     beforeEach(function (done) {
-        this.timeout(5000);
-        setTimeout(done, 2500);
+      this.timeout(5000);
+      setTimeout(done, 2500);
     })
 
     it("Возвращает объект нового пользователя с корректным ником (isNickname: true) , если он является новым", async () => {
@@ -103,12 +100,13 @@ describe("Тест функции регистрации registerNewClient", () 
       })
     })
 
-    it("Возвращает объект старого пользователя, если он не является новым", async () => {
+    it("Возвращает объект старого пользователя, если он не является новым", async function () {
+      this.timeout(500);
       return new Promise(async (resolve) => {
         clientSocket.emit("registerClient", clientInfoTrue);
         clientSocket.once("clientRegistered", (resNewUser: any) => {
           assert.equal(clientInfoTrue.clientId, resNewUser.clientId);
-          resolve();
+          setTimeout(resolve, 400);
         })
       })
     })

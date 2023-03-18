@@ -11,7 +11,7 @@ import registerNewClient from '../services/user.registerNewClient';
 export default function connectSocket(server: Server, api: LolApi) {
   server.on("connection", (socket: SockerServer) => {
     socket.emit("connectBot", socket.id);
-    
+
     socket.on("registerClient", async (clientInfo: INewUser) => {
       await registerNewClient(socket, api, clientInfo);
     })
@@ -36,13 +36,17 @@ export default function connectSocket(server: Server, api: LolApi) {
                     summoner_puuid: resSummoner?.response.puuid,
                     timer_tracking_player: null,
                     match_id: resLastMatch?.response[0],
+                  })
                 })
-              })
             })
         })
         .catch((error) => {
           console.log(error);
         })
     })
+
+    socket.on("disconnect", (reason) => {
+      console.log(reason);
+    });
   })
 }

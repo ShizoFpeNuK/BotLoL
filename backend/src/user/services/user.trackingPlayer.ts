@@ -13,22 +13,24 @@ export async function summonerEnableTrackingPlayer(socket: SocketServer, api: Lo
     .then(async (resUser: User | null) => {
       if (resUser) {
         if (!resUser.dataValues.timer_tracking_player) {
-          socket.emit("playerAlreadyTracked", { //Вынести отдельно
+          socket.emit("playerAlreadyTracked", {
             isTracked: false,
             channelId: clientInfo.channelId,
             clientId: clientInfo.clientId,
           })
-
           const timerTrackingPlayerId: NodeJS.Timer = setInterval(async () =>
             await summonerResultLastMatch(api, resUser.dataValues.summoner_puuid, resUser.dataValues.match_id)
               .then(async (resLastMatch: IMatchInfo) => {
-                socket.emit("summonerResultPlayedMatch", {
-                  win: resLastMatch.resultLastMatch,
-                  channelId: clientInfo.channelId,
-                  clientId: clientInfo.clientId,
-                });
-                await resUser?.update({
+                await resUser.update({
                   match_id: resLastMatch.matchId,
+                }).then(() => {
+                  socket.emit("summonerResultPlayedMatch", {
+                    win: resLastMatch.resultLastMatch,
+                    channelId: clientInfo.channelId,
+                    clientId: clientInfo.clientId,
+                  });
+                }).catch((error) => {
+                  console.log(error);
                 })
               })
               .catch((error) => {
@@ -63,9 +65,13 @@ export async function summonerDisableTrackingPlayer(socket: SocketServer, client
           channelId: clientInfo.channelId,
           clientId: clientInfo.clientId,
         })
-        clearInterval(resUser?.dataValues.timer_tracking_player);
-        await resUser?.update({
+
+        clearInterval(resUser.dataValues.timer_tracking_player);
+        await resUser.update({
           timer_tracking_player: null,
+        }).then(() => {
+        }).catch((error) => {
+          console.log(error);
         })
       } else {
         clientNoRegisted(socket, clientInfo);

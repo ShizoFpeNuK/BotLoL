@@ -48,7 +48,7 @@ async function checkForRegistration(socket: SocketSetver, clientInfo: INewUser):
     await User.findByPk(clientInfo.clientId)
       .then((resUser: User | null) => {
         if (resUser) {
-          socket.emit("clientRegistered", { //Вынести отдельно
+          socket.emit("clientRegistered", {
             channelId: clientInfo.channelId,
             clientId: clientInfo.clientId,
             summonerName: resUser.dataValues.summoner_name

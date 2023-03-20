@@ -9,13 +9,15 @@ export async function clearDB(): Promise<void> {
         timer_tracking_player: null
       }]
     }
-  }).then(async (findUser: User[]) => {
+  }).then((findUser: User[]) => {
     findUser.forEach(async (user: User) => {
+      clearInterval(user.dataValues.timer_tracking_player);
       await user.update({
         timer_tracking_player: null
       })
+      console.log("Обнулены требуемые значения в БД.");
     })
+  }).catch((error) => {
+    console.log(error);
   })
-
-  console.log("Обнулены требуемые значения в БД.")
 }

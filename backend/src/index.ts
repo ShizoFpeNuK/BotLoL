@@ -5,10 +5,13 @@ import { clearDB } from './db/functions';
 import connectSocket from './user/sockets/user.socket.connectSocket';
 
 
-initDB().then(() => {clearDB()});
+initDB().then(() => {
+  return clearDB();
+}).catch((error) => {
+  console.log(error);
+})
 
-const ServerPort: number = Number(process.env.ServerPort!);
-const server = new Server(ServerPort);
+const server = new Server(Number(process.env.ServerPort!));
 const apiRequestRiot = new LolApi({ key: process.env.ApiKey });
 
 connectSocket(server, apiRequestRiot);

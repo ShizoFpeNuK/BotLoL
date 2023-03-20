@@ -5,7 +5,7 @@ import { INewUser } from '../../../src/user/user.model';
 import { io, Socket as SocketClient } from "socket.io-client";
 import { Server, Socket as SockerServer } from 'socket.io';
 import User from '../../../src/db/models/user.model';
-import registerNewClient from "../../../src/user/services/user.registerNewClient";
+import registerNewClient from "../../../src/user/services/registerNewClient";
 import * as dotenv from 'dotenv';
 dotenv.config();
 

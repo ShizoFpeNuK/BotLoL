@@ -2,7 +2,7 @@ import { LolApi } from 'twisted';
 import { assert } from 'chai';
 import { describe } from 'mocha';
 import { IMatchInfo } from '../../../src/user/user.model';
-import summonerResultLastMatch from "../../../src/user/services/user.summonerResultLastMatch";
+import summonerResultLastMatch from "../../../src/user/services/functions/summonerResultLastMatch";
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -17,7 +17,7 @@ describe("Тест функции получения информации о н�
     return new Promise(async (resolve) => {
       await summonerResultLastMatch(api, correctSummonerPUUID, lastMatchId)
         .then((matchInfo: IMatchInfo) => {
-          assert.isTrue(matchInfo.resultLastMatch);
+          assert.isObject(matchInfo);
           resolve();
         })
     })

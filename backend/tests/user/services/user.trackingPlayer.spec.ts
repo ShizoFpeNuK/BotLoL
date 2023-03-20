@@ -1,10 +1,10 @@
-import { IMatchInfo, IUser } from '../../../src/user/user.model';
+import { IUser } from '../../../src/user/user.model';
 import { LolApi } from 'twisted';
 import { assert } from 'chai';
 import { describe } from 'mocha';
 import { io, Socket as SocketClient } from 'socket.io-client';
-import { Server, Socket as SockerServer } from 'socket.io';
-import { summonerDisableTrackingPlayer, summonerEnableTrackingPlayer } from '../../../src/user/services/user.trackingPlayer';
+import { Server, Socket as SocketServer } from 'socket.io';
+import { summonerDisableTrackingPlayer, summonerEnableTrackingPlayer } from '../../../src/user/services/trackingPlayer';
 import User from '../../../src/db/models/user.model';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -19,11 +19,12 @@ const clientInfoTrue: IUser = {
 describe("Тест функции отслеживания игрока summonerEnableTrackingPlayer", () => {
   let server: Server;
   let clientSocket: SocketClient;
-
+  
+  //Запуск сервера, создание клиента и обнуление БД
   before(async () => {
     return new Promise(async (resolve) => {
       server = new Server(4001);
-      server.on("connection", async (socket: SockerServer) => {
+      server.on("connection", async (socket: SocketServer) => {
         socket.on("enableTrackingPlayer", async (clientInfo: IUser) => {
           await summonerEnableTrackingPlayer(socket, api, clientInfo);
         })
@@ -35,33 +36,13 @@ describe("Тест функции отслеживания игрока summoner
 
       await User.destroy({
         truncate: true
-      }).then(async () => {
-        await User.create({
-          client_id: "102930931931",
-          summoner_name: "ShiZoFreNuK",
-          match_id: "RU_342441",
-          summoner_puuid: "vggdP7RnOjaVfahyJpwGDG21uWhf9lSMsuHpXpo0pa4pvJ3aWiKlo6YSv-SUM59wKXH36LpX0MHfAQ",
-        }).then(() => {
-          resolve();
-        })
+      }).then(() => {
+        resolve();
       })
     })
   })
 
-  afterEach(function () { //Поменять
-    this.timeout(5000);
-    return new Promise(async (resolve) => {
-      await User.findByPk(clientInfoTrue.clientId)
-        .then(async (user: User | null) => {
-          await user?.update({
-            match_id: "RU_342441",
-          }).then(() => {
-            setTimeout(resolve, 4000);
-          })
-        })
-    })
-  })
-
+  //Закрытие сервера, отключение клиента и обнуление БД
   after(async () => {
     return new Promise(async (resolve) => {
       clientSocket.close();
@@ -76,8 +57,46 @@ describe("Тест функции отслеживания игрока summoner
   })
 
 
+  describe("Проверка на невыполение функций отслеживания, если пользователь не зарегистрирован", () => {
+    it("Возвращает объект пользователя при включение функции отслеживания игрока", function () {
+      this.timeout(4000);
+      clientSocket.emit("enableTrackingPlayer", clientInfoTrue);
+      return new Promise(async (resolve) => {
+        clientSocket.once("clientNoRegisted", (clientInfo: IUser) => {
+          assert.isObject(clientInfo, "Выполнено c ошибкой");
+          setTimeout(resolve, 3000);
+        })
+      })
+    })
+
+    it("Возвращает объект пользователя при включение функции выключения отслеживания игрока", function () {
+      this.timeout(4000);
+      clientSocket.emit("disableTrackingPlayer", clientInfoTrue);
+      return new Promise(async (resolve) => {
+        clientSocket.once("clientNoRegisted", (clientInfo: IUser) => {
+          assert.isObject(clientInfo, "Выполнено c ошибкой");
+          setTimeout(resolve, 3000);
+        })
+      })
+    })
+  })
+
 
   describe("Получение результата матча при отслеживании игрока", () => {
+    before(function () {
+      this.timeout(5000);
+      return new Promise(async (resolve) => {
+        await User.create({
+          client_id: "102930931931",
+          summoner_name: "ShiZoFreNuK",
+          match_id: "RU_342441",
+          summoner_puuid: "vggdP7RnOjaVfahyJpwGDG21uWhf9lSMsuHpXpo0pa4pvJ3aWiKlo6YSv-SUM59wKXH36LpX0MHfAQ",
+        }).then(() => {
+          setTimeout(resolve, 4000);
+        })
+      })
+    })
+
     after(function (done) {
       this.timeout(14000);
       clientSocket.emit("disableTrackingPlayer", clientInfoTrue);
@@ -96,7 +115,8 @@ describe("Тест функции отслеживания игрока summoner
     })
   })
 
-  describe("Проверка на отслеживание", () => {
+
+  describe("Проверка на отслеживание игрока", () => {
     after(function (done) {
       this.timeout(14000);
       clientSocket.emit("disableTrackingPlayer", clientInfoTrue);
@@ -108,7 +128,7 @@ describe("Тест функции отслеживания игрока summoner
       clientSocket.emit("enableTrackingPlayer", clientInfoTrue);
       return new Promise(async (resolve) => {
         clientSocket.once("playerAlreadyTracked", (noTrackedPlayer: any) => {
-          assert.isFalse(noTrackedPlayer.isTracked);
+          assert.isFalse(noTrackedPlayer.isTracked, "Выполнено c ошибкой");
           setTimeout(resolve, 13000);
         })
       })
@@ -119,7 +139,7 @@ describe("Тест функции отслеживания игрока summoner
       clientSocket.emit("enableTrackingPlayer", clientInfoTrue);
       return new Promise(async (resolve) => {
         clientSocket.once("playerAlreadyTracked", (yesTrackedPlayer: any) => {
-          assert.isTrue(yesTrackedPlayer.isTracked);
+          assert.isTrue(yesTrackedPlayer.isTracked, "Выполнено c ошибкой");
           setTimeout(resolve, 13000);
         })
       })

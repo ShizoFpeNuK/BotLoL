@@ -1,7 +1,7 @@
-import { IMatchInfo } from '../user.model';
+import { IMatchInfo } from '../../user.model';
 import { Constants, LolApi } from 'twisted';
 import { ApiResponseDTO, MatchV5DTOs } from 'twisted/dist/models-dto';
-import { lastMatchBySummoner, resultMatchByMatchId } from '../../riot/riot.request';
+import { lastMatchBySummoner, resultMatchByMatchId } from '../../../riot/riot.request';
 
 
 export default async function summonerResultLastMatch(api: LolApi, summonerPUUID: string, lastMatchId: string): Promise<IMatchInfo> {
@@ -17,8 +17,9 @@ export default async function summonerResultLastMatch(api: LolApi, summonerPUUID
                   for (let i = 0; i < resMatch.response.info.participants.length; i++) {
                     if (summonerPUUID === resMatch.response.info.participants[i].puuid) {
                       resolve({
+                        recreated: resMatch.response.info.participants[i].gameEndedInEarlySurrender, //Внести
                         resultLastMatch: resMatch.response.info.participants[i].win,
-                        matchId: summonerLastMatchId
+                        matchId: summonerLastMatchId,
                       })
                       break;
                     }

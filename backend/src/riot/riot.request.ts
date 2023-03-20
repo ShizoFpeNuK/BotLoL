@@ -1,7 +1,7 @@
-import { LolApi } from 'twisted';
 import { MatchQueryV5DTO } from 'twisted/dist/models-dto/matches/query-v5/match-query-v5.dto';
+import { Constants, LolApi } from 'twisted';
 import { RegionGroups, Regions } from 'twisted/dist/constants';
-import { ApiResponseDTO, MatchV5DTOs, SummonerV4DTO } from 'twisted/dist/models-dto';
+import { ApiResponseDTO, MatchV5DTOs, SummonerLeagueDto, SummonerV4DTO } from 'twisted/dist/models-dto';
 
 const query: MatchQueryV5DTO = {
   // start: 3,
@@ -31,7 +31,14 @@ export async function resultMatchByMatchId(api: LolApi, matchId: string, region:
     return await api.MatchV5.get(matchId, region);
   }
   catch (error) {
-    // console.log(`Нет никакой информации о матче ${matchId}`)
+    return null;
+  }
+}
+
+export async function leagueByEncryptedSummonerId(api: LolApi, encryptedSummonerId: string): Promise<ApiResponseDTO<SummonerLeagueDto[]> | null> { //добавить тест
+  try {
+    return await api.League.bySummoner(encryptedSummonerId, Constants.Regions.RUSSIA);
+  } catch (error) {
     return null;
   }
 }
